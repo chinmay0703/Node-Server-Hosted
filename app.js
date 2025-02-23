@@ -18,6 +18,8 @@ app.get("/api/games", async (req, res) => {
     }
 });
 
+// Scrape NDTV News Latest News Section Scraping
+
 const URL = 'https://www.ndtv.com/latest#pfrom=home-ndtv_mainnavigation';
 
 async function scrapeNDTV() {
@@ -64,6 +66,51 @@ app.get("/news", async (req, res) => {
     res.json({ news: news });
 });
 
+// Scraping INDIATV
+
+const URL1 = 'https://www.indiatvnews.com/sports';
+async function scrapeIndiaTv() {
+    try {
+        // Fetch the HTML content
+        const { data } = await axios.get(URL1, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
+            }
+        });
+
+        // Load HTML into Cheerio
+        const $ = cheerio.load(data);
+        const articles = [];
+
+        // Loop through each news item inside `.news-list li`
+        $('.cat-top-news .news-list li').each((index, element) => {
+            const title = $(element).find('h3.caption').text().trim();
+            const link = $(element).find('a').attr('href');
+            let image = $(element).find('figure.thumb img').attr('data-original');
+            if (!image) {
+                image = $(element).find('figure.thumb img').attr('src'); // Fallback if `data-original` is missing
+            }
+            if (title && link && image) {
+                articles.push({ title, link, image });
+            }
+        });
+
+        return { news: articles };
+
+    } catch (error) {
+        console.error('Error scraping IndiaTV:', error.message);
+        return { news: [] };
+    }
+}
+
+app.get("/news-sports", async (req, res) => {
+    const news = await scrapeIndiaTv();
+    console.log(news, "News")
+    res.json({ news: news });
+});
+
+// INDIATV Sraping
+
 app.get("/top-indian-trending-keywords", async (req, res) => {
     try {
         const results = await googleTrends.dailyTrends({ geo: "IN" });
@@ -73,6 +120,7 @@ app.get("/top-indian-trending-keywords", async (req, res) => {
         res.status(500).json({ error: "Error fetching Top Trending Keywords" });
     }
 });
+
 app.get("/api/games/pc", async (req, res) => {
     try {
         const response = await fetch("https://www.freetogame.com/api/games?platform=pc");
