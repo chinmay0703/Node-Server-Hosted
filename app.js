@@ -18,9 +18,7 @@ app.get("/api/games", async (req, res) => {
     }
 });
 
-
 const URL = 'https://www.ndtv.com/latest#pfrom=home-ndtv_mainnavigation';
-
 
 async function scrapeNDTV() {
     try {
@@ -59,7 +57,6 @@ async function scrapeNDTV() {
         console.error('Error scraping NDTV:', error.message);
     }
 }
-
 
 app.get("/news", async (req, res) => {
     const news = await scrapeNDTV();
@@ -113,8 +110,5 @@ app.get("/api/games/category/:category", async (req, res) => {
         res.status(500).json({ error: `Error fetching games in category: ${category}` });
     }
 });
-
-// write the api to scrape this https://www.ndtv.com/
-
 
 app.listen(5000, () => console.log("Proxy server running on port 5000"));
