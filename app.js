@@ -109,7 +109,48 @@ app.get("/news-sports", async (req, res) => {
     res.json({ news: news });
 });
 
-// INDIATV Sraping
+// Indaian Express Sraping
+
+const URL2 = 'https://indianexpress.com/section/technology/';
+async function scrapeIndianExpress() {
+    try {
+        // Fetch the HTML content
+        const { data } = await axios.get(URL2, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
+            }
+        });
+
+        // Load HTML into Cheerio
+        const $ = cheerio.load(data);
+        const articles = [];
+
+        // Loop through each news item inside `<ul class="article-list">`
+        $('ul.article-list li').each((index, element) => {
+            const title = $(element).find('h3 a').text().trim();
+            const link = $(element).find('h3 a').attr('href');
+            let image = $(element).find('figure img').attr('data-src') || $(element).find('figure img').attr('src'); // Fallback if `data-src` is missing
+            
+            if (title && link && image) {
+                articles.push({ title, link, image });
+            }
+        });
+
+        return { news: articles };
+
+    } catch (error) {
+        console.error('Error scraping Indian Express:', error.message);
+        return { news: [] };
+    }
+}
+app.get("/news-tech", async (req, res) => {
+    const news = await scrapeIndianExpress();
+    console.log(news, "News")
+    res.json({ news: news });
+});
+
+// Indian Express Scraping
+
 
 app.get("/top-indian-trending-keywords", async (req, res) => {
     try {
