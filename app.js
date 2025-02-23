@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import fetch from "node-fetch";
+import googleTrends from "google-trends-api";
 
 const app = express();
 app.use(cors());
@@ -12,6 +13,16 @@ app.get("/api/games", async (req, res) => {
         res.json(data);
     } catch (error) {
         res.status(500).json({ error: "Error fetching games" });
+    }
+});
+
+app.get("/top-indian-trending-keywords", async (req, res) => {
+    try {
+        const results = await googleTrends.dailyTrends({ geo: "IN" });
+        res.json(JSON.parse(results));
+    } catch (error) {
+        console.error("Error fetching trending keywords:", error);
+        res.status(500).json({ error: "Error fetching Top Trending Keywords" });
     }
 });
 
